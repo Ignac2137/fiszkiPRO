@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0c0c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Fiszki Pro</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c14;--s1:#13131f;--s2:#1c1c2e;--s3:#262640;--b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);--b3:rgba(255,255,255,.2);--tx:#e2e0f0;--tx2:#8882a8;--tx3:#4a4568;--acc:#b8ff45;--acc-d:rgba(184,255,69,.12);--red:#ff5f6d;--amb:#ffa94d;--grn:#51cf66;--blu:#74b9ff;--pur:#cc5de8;--r:16px;--rsm:10px;--nh:68px;--safe:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'DM Sans',sans-serif;color:var(--tx);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+input,textarea,select,button{font-family:inherit}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+#app{height:100dvh;display:flex;flex-direction:column}
+.views{flex:1;overflow:hidden;position:relative}
+.view{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;padding-bottom:calc(var(--nh) + var(--safe) + 20px);-webkit-overflow-scrolling:touch}
+.view.active{display:block}
+.vh{padding:52px 20px 16px}
+.vh-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.vt{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1.1}
+.vs{font-size:13px;color:var(--tx2);margin-top:4px}
+.xp-chip{background:var(--acc-d);border:.5px solid rgba(184,255,69,.25);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--acc);white-space:nowrap;flex-shrink:0}
+.bnav{height:calc(var(--nh) + var(--safe));padding-bottom:var(--safe);background:rgba(12,12,20,.96);backdrop-filter:blur(24px);border-top:.5px solid var(--b1);display:flex;z-index:100;flex-shrink:0}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;color:var(--tx3);font-size:11px;font-weight:500;transition:color .2s;padding:8px 4px;position:relative}
+.ni.active{color:var(--acc)}
+.ni-ico{font-size:22px;line-height:1}
+.ni-badge{position:absolute;top:7px;right:calc(50% - 20px);background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.seg{display:flex;background:var(--s1);border-radius:12px;padding:3px;gap:2px;margin:0 16px 12px;overflow-x:auto}
+.sb{flex-shrink:0;padding:8px 10px;border-radius:9px;border:none;background:none;color:var(--tx2);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.sb.active{background:var(--s3);color:var(--tx)}
+.card{background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:16px;margin:0 16px 12px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 16px 10px}
+.sec-ttl{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;font-family:'Syne',sans-serif}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:500;border:.5px solid var(--b2);background:var(--s1);color:var(--tx);cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn:active{background:var(--s2)}
+.btn.acc{background:var(--acc);color:#0c0c14;border-color:transparent;font-weight:700}
+.btn.acc:active{opacity:.85}
+.btn.danger{border-color:rgba(255,95,109,.3);color:var(--red)}
+.btn.pur{background:rgba(204,93,232,.15);color:var(--pur);border-color:rgba(204,93,232,.3)}
+.btn-main{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--acc);color:#0c0c14;border-radius:24px;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:transform .15s,opacity .15s;font-family:'Syne',sans-serif}
+.btn-main:active{transform:scale(.97)}
+.pill-sel{background:var(--s1);border:.5px solid var(--b2);border-radius:20px;color:var(--tx);font-size:14px;padding:8px 14px;flex:1;-webkit-appearance:none;appearance:none;cursor:pointer;min-width:0}
+.prog-wrap{padding:0 16px 12px}
+.prog-track{height:3px;background:var(--s2);border-radius:2px}
+.prog-fill{height:3px;border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-top:6px}
+
+/* FLIP CARD */
+.flip-scene{padding:0 16px 10px;perspective:1400px}
+.flip-card{position:relative;width:100%;min-height:260px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);cursor:pointer;border-radius:var(--r)}
+.flip-card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);padding:24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;border:.5px solid var(--b2);text-align:center}
+.face-front{background:var(--s1)}
+.face-back{background:var(--s2);transform:rotateY(180deg)}
+.face-lbl{font-size:10px;letter-spacing:.12em;color:var(--tx3);text-transform:uppercase;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:14px}
+.face-content{font-size:20px;line-height:1.45;color:var(--tx);width:100%;word-break:break-word;overflow-x:auto}
+.face-content .katex-display{margin:8px 0;overflow-x:auto;overflow-y:hidden}
+.face-content .katex{font-size:1.05em}
+.face-content p{margin-bottom:8px}.face-content p:last-child{margin-bottom:0}
+.face-content code{background:var(--s3);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.85em}
+.face-content strong{color:var(--acc);font-weight:600}
+.face-hint{font-size:11px;color:var(--tx3);margin-top:14px}
+.face-status{position:absolute;top:12px;right:12px;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;font-family:'Syne',sans-serif}
+.face-tags{position:absolute;bottom:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.s-new{background:rgba(116,185,255,.15);color:var(--blu)}
+.s-lrn{background:rgba(255,169,77,.15);color:var(--amb)}
+.s-rev{background:rgba(204,93,232,.15);color:var(--pur)}
+.s-knw{background:rgba(81,207,102,.15);color:var(--grn)}
+.tag{display:inline-block;background:var(--s2);color:var(--tx2);font-size:10px;padding:2px 8px;border-radius:20px;cursor:pointer;font-weight:500;border:.5px solid transparent;transition:all .15s}
+.tag.sel{background:var(--acc-d);color:var(--acc);border-color:rgba(184,255,69,.3)}
+
+/* RATING */
+.rating-row{display:flex;gap:8px;padding:0 16px 10px}
+.rb{flex:1;padding:12px 6px;border-radius:var(--rsm);border:.5px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;font-weight:600;cursor:pointer;transition:background .15s;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Syne',sans-serif}
+.rb .ico{font-size:20px}
+.rb small{font-size:9px;opacity:.6}
+.rb.bad{border-color:rgba(255,95,109,.25);color:var(--red)}.rb.bad:active{background:rgba(255,95,109,.1)}
+.rb.ok{border-color:rgba(255,169,77,.25);color:var(--amb)}.rb.ok:active{background:rgba(255,169,77,.1)}
+.rb.good{border-color:rgba(81,207,102,.25);color:var(--grn)}.rb.good:active{background:rgba(81,207,102,.1)}
+
+/* CONFIDENCE */
+.conf-row{display:flex;gap:8px;padding:0 16px 12px}
+.conf-btn{flex:1;padding:14px 8px;border-radius:var(--rsm);border:.5px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:'Syne',sans-serif;transition:all .2s}
+.conf-btn .ico{font-size:22px}
+.conf-btn:active,.conf-btn.chosen{transform:scale(.97)}
+.conf-btn.c1.chosen{background:rgba(255,95,109,.15);border-color:rgba(255,95,109,.4);color:var(--red)}
+.conf-btn.c2.chosen{background:rgba(255,169,77,.15);border-color:rgba(255,169,77,.4);color:var(--amb)}
+.conf-btn.c3.chosen{background:rgba(81,207,102,.15);border-color:rgba(81,207,102,.4);color:var(--grn)}
+.conf-label{text-align:center;font-size:11px;color:var(--tx3);padding:0 16px 8px;font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+
+/* FEYNMAN */
+.feynman-wrap{padding:0 16px 12px}
+.feynman-q{background:var(--s1);border:.5px solid var(--b2);border-radius:var(--r);padding:20px;margin-bottom:10px}
+.feynman-q-lbl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px}
+.feynman-q-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.feynman-ta{width:100%;background:var(--s2);border:.5px solid var(--b2);border-radius:var(--rsm);padding:14px;color:var(--tx);font-size:15px;line-height:1.6;min-height:120px;resize:vertical;outline:none;transition:border-color .2s}
+.feynman-ta:focus{border-color:var(--acc)}
+.feynman-ta::placeholder{color:var(--tx3)}
+.feynman-result{background:var(--s2);border-radius:var(--r);padding:16px;margin-top:10px}
+.feynman-score{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:12px;text-align:center}
+.feynman-section{margin-bottom:12px}
+.feynman-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Syne',sans-serif;margin-bottom:6px}
+.feynman-section p{font-size:13px;color:var(--tx2);line-height:1.6}
+.feynman-ok{color:var(--grn)}.feynman-miss{color:var(--amb)}.feynman-err{color:var(--red)}
+
+/* TRANSFER QUESTION */
+.transfer-card{background:var(--s2);border:.5px solid rgba(204,93,232,.3);border-radius:var(--r);padding:16px;margin:0 16px 10px}
+.transfer-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Syne',sans-serif;color:var(--pur);margin-bottom:8px}
+.transfer-q{font-size:15px;line-height:1.5;color:var(--tx)}
+.transfer-ans{margin-top:10px;padding-top:10px;border-top:.5px solid var(--b1);font-size:13px;color:var(--tx2);line-height:1.5;display:none}
+
+/* ANALYSIS */
+.analysis-result{background:var(--s2);border-radius:var(--r);padding:16px;margin:0 16px 12px}
+.analysis-ttl{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--pur)}
+.analysis-body{font-size:14px;line-height:1.7;color:var(--tx2)}
+.analysis-body strong{color:var(--tx)}
+.analysis-body ul{padding-left:16px;margin:8px 0}
+.analysis-body li{margin-bottom:4px}
+
+/* CALIBRATION STATS */
+.calib-wrap{display:flex;gap:10px;margin:0 16px 12px}
+.calib-tile{flex:1;background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:14px;text-align:center}
+.calib-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+.calib-lbl{font-size:11px;color:var(--tx2);margin-top:4px}
+.calib-bar-wrap{padding:0 16px 12px}
+.calib-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.calib-bar-lbl{font-size:12px;color:var(--tx2);width:90px;flex-shrink:0}
+.calib-bar-track{flex:1;height:8px;background:var(--s2);border-radius:4px;overflow:hidden}
+.calib-bar-fill{height:8px;border-radius:4px}
+
+/* AI LOADING */
+.ai-loading{display:flex;align-items:center;gap:10px;padding:14px 16px;font-size:13px;color:var(--tx2)}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CARDS LIST */
+.ci{display:flex;align-items:center;gap:10px;background:var(--s1);border:.5px solid var(--b1);border-radius:var(--rsm);padding:11px 13px;margin:0 16px 7px}
+.ci-txt{flex:1;min-width:0}
+.ci-front{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-back{font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.ci-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.ci-del{width:32px;height:32px;border-radius:8px;background:rgba(255,95,109,.1);border:none;color:var(--red);font-size:15px;cursor:pointer;flex-shrink:0}
+.deck-item{display:flex;align-items:center;gap:11px;background:var(--s1);border:.5px solid var(--b1);border-radius:var(--rsm);padding:12px 14px;margin:0 16px 7px;cursor:pointer}
+.di-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.di-name{flex:1;font-size:14px;font-weight:600;font-family:'Syne',sans-serif}
+.di-cnt{font-size:12px;color:var(--tx2)}
+
+/* SEARCH */
+.search{display:flex;align-items:center;gap:8px;margin:0 16px 10px;background:var(--s1);border:.5px solid var(--b2);border-radius:var(--rsm);padding:9px 13px}
+.search input{flex:1;background:none;border:none;color:var(--tx);font-size:14px;outline:none}
+.search input::placeholder{color:var(--tx3)}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px 12px}
+.st{background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:16px}
+.st-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800}
+.st-lbl{font-size:11px;color:var(--tx2);margin-top:4px}
+.bars{display:flex;align-items:flex-end;gap:5px;height:72px}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end}
+.bf{width:100%;border-radius:3px 3px 0 0;min-height:2px;background:var(--acc);opacity:.7}
+.bc.today .bf{opacity:1}
+.bd{font-size:9px;color:var(--tx3)}
+.fc{display:flex;align-items:flex-end;gap:3px;height:56px}
+.fcc{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end}
+.fcf{width:100%;border-radius:2px 2px 0 0;background:var(--pur);min-height:2px}
+.fcl{font-size:8px;color:var(--tx3)}
+.dp-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid var(--b1)}
+.dp-row:last-child{border:none}
+.dp-name{flex:1;font-size:13px}
+.dp-bar{width:70px;height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+.dp-fill{height:5px;background:var(--grn);border-radius:3px}
+.dp-pct{font-size:12px;color:var(--tx2);width:30px;text-align:right}
+
+/* SLIDER */
+.slider-card{background:var(--s1);border:.5px solid var(--b2);border-radius:var(--r);padding:22px 20px;margin:0 16px 12px}
+.sl-cat{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--tx3);text-transform:uppercase;font-family:'Syne',sans-serif;margin-bottom:8px}
+.sl-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px}
+.sl-desc{font-size:13px;color:var(--tx2);margin-bottom:20px;line-height:1.5}
+.sl-value{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:500;color:var(--acc);text-align:center;margin:10px 0}
+.sl-unit{font-size:15px;color:var(--tx2);font-family:'DM Sans',sans-serif}
+.sl-range{display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);font-family:'JetBrains Mono',monospace;margin-top:3px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--s3);border-radius:3px;outline:none;margin:10px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 2px 12px rgba(184,255,69,.4)}
+.sl-result{text-align:center;padding:16px;background:var(--s2);border-radius:var(--rsm);margin-top:12px}
+.sl-score-lbl{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px}
+.sl-score-det{font-size:13px;color:var(--tx2);font-family:'JetBrains Mono',monospace}
+
+/* IMAGE OCCLUSION */
+.occ-study{position:relative;margin:0 16px 12px;border-radius:var(--r);overflow:hidden;background:var(--s1);border:.5px solid var(--b1)}
+.occ-study img{width:100%;display:block}
+.occ-mask{position:absolute;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;font-family:'Syne',sans-serif;transition:opacity .35s;user-select:none}
+.occ-mask.revealed{opacity:0;pointer-events:none}
+
+/* OCC EDITOR */
+#occ-editor{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;flex-direction:column}
+#occ-editor.open{display:flex}
+.occ-toolbar{display:flex;align-items:center;gap:8px;padding:52px 14px 12px;background:var(--s1);border-bottom:.5px solid var(--b1);flex-wrap:wrap}
+.occ-canvas-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:12px;background:var(--bg)}
+#occ-canvas{border-radius:8px;touch-action:none;cursor:crosshair;max-width:100%}
+.occ-rects-list{padding:10px 14px;background:var(--s1);border-top:.5px solid var(--b1);min-height:48px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.occ-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;font-family:'Syne',sans-serif}
+.occ-chip button{background:none;border:none;color:#fff;cursor:pointer;font-size:14px;padding:0;line-height:1;opacity:.8}
+
+/* MODAL SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;flex-direction:column;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{background:var(--s1);border-radius:24px 24px 0 0;padding:20px 20px calc(20px + var(--safe));transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:90dvh;overflow-y:auto}
+.overlay.open .sheet{transform:translateY(0)}
+.sh-handle{width:36px;height:4px;background:var(--b2);border-radius:2px;margin:0 auto 16px}
+.sh-ttl{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;color:var(--tx2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;font-family:'Syne',sans-serif;font-weight:700}
+.field input,.field textarea,.field select{width:100%;background:var(--bg);border:.5px solid var(--b2);border-radius:var(--rsm);padding:11px 13px;color:var(--tx);font-size:14px;-webkit-appearance:none;outline:none;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:var(--acc)}
+.field textarea{min-height:88px;resize:vertical;line-height:1.5}
+.field select{appearance:none}
+.sh-actions{display:flex;gap:10px;margin-top:8px}
+.sh-cancel{flex:1;padding:13px;border-radius:var(--rsm);border:.5px solid var(--b2);background:none;color:var(--tx2);font-size:14px;cursor:pointer}
+.sh-ok{flex:2;padding:13px;border-radius:var(--rsm);border:none;background:var(--acc);color:#0c0c14;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif}
+.md-prev{background:var(--bg);border:.5px solid var(--b1);border-radius:var(--rsm);padding:10px 13px;font-size:13px;min-height:40px;margin-top:6px;color:var(--tx2);line-height:1.5;display:none}
+.md-prev .katex{font-size:1em}
+
+/* ADMIN */
+.adm-sec{margin:0 16px 18px}
+.adm-ttl{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;font-family:'Syne',sans-serif;margin-bottom:10px}
+.adm-card{background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:16px}
+.fmt-hint{font-size:11px;color:var(--tx3);line-height:1.6;margin-bottom:10px;font-family:'JetBrains Mono',monospace;background:var(--bg);padding:10px;border-radius:8px}
+.paste-area{width:100%;background:var(--bg);border:.5px solid var(--b2);border-radius:var(--rsm);padding:10px 12px;color:var(--tx);font-size:12px;min-height:120px;resize:vertical;font-family:'JetBrains Mono',monospace;line-height:1.5;outline:none}
+.eng-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:.5px solid var(--b1)}
+.eng-item:last-child{border:none}
+.eng-name{flex:1;font-size:13px}
+.eng-val{font-size:13px;font-weight:700;color:var(--acc);font-family:'JetBrains Mono',monospace}
+.eng-unit{font-size:10px;color:var(--tx2)}
+.eng-cat{font-size:9px;padding:2px 7px;border-radius:10px;background:var(--s2);color:var(--tx2);font-family:'Syne',sans-serif;font-weight:700;white-space:nowrap}
+
+/* POMO */
+.pomo-bar{display:flex;align-items:center;gap:8px;padding:8px 16px 0}
+.pomo-btn{background:var(--s1);border:.5px solid var(--b1);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.pomo-btn.run{color:var(--acc);border-color:rgba(184,255,69,.3);background:var(--acc-d)}
+.pomo-btn.brk{color:var(--grn);border-color:rgba(81,207,102,.3)}
+
+/* MISC */
+.empty{text-align:center;padding:48px 20px}
+.empty-ico{font-size:44px;margin-bottom:12px}
+.empty-t{font-size:17px;font-weight:600;font-family:'Syne',sans-serif;margin-bottom:6px}
+.empty-s{font-size:13px;color:var(--tx2)}
+.done-wrap{padding:28px 20px;text-align:center}
+.done-ico{font-size:52px;margin-bottom:12px}
+.done-ttl{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px}
+.done-sub{font-size:14px;color:var(--tx2);margin-bottom:20px}
+.done-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
+.done-tile{background:var(--s1);border-radius:var(--rsm);padding:14px}
+.done-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+.done-lbl{font-size:11px;color:var(--tx2);margin-top:3px}
+.chk-group{display:flex;flex-direction:column;gap:8px}
+.chk-row{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer}
+.chk-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--acc);cursor:pointer}
+.deck-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.toast{position:fixed;bottom:calc(var(--nh) + var(--safe) + 12px);left:50%;transform:translateX(-50%) translateY(12px);background:var(--tx);color:var(--bg);padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.view.active>*{animation:fadeUp .28s ease both}
+.view.active>*:nth-child(2){animation-delay:.05s}
+.view.active>*:nth-child(3){animation-delay:.1s}
+.view.active>*:nth-child(4){animation-delay:.15s}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="views">
+
+    <!-- LEARN -->
+    <div class="view active" id="v-learn">
+      <div class="vh">
+        <div class="vh-row">
+          <div><div class="vt">Nauka</div><div class="vs" id="learn-sub">Wybierz tryb</div></div>
+          <div class="xp-chip" id="xp-chip">⚡ 0 XP</div>
+        </div>
+      </div>
+      <div class="pomo-bar">
+        <button class="pomo-btn" id="pomo-btn" onclick="togglePomo()">⏱ 25:00</button>
+        <span style="font-size:11px;color:var(--tx3)">Pomodoro</span>
+      </div>
+      <div style="padding:12px 16px 0">
+        <div class="seg" id="mode-seg">
+          <button class="sb active" onclick="setMode('deck',this)">Zestaw</button>
+          <button class="sb" onclick="setMode('mix',this)">Miks</button>
+          <button class="sb" onclick="setMode('tags',this)">Tagi</button>
+          <button class="sb" onclick="setMode('feynman',this)">🧠 Feynman</button>
+          <button class="sb" onclick="setMode('eng',this)">⚙️ Intuicja</button>
+        </div>
+      </div>
+      <div id="learn-ctrl" style="padding:8px 16px 10px"></div>
+      <div class="prog-wrap" id="learn-prog" style="display:none">
+        <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%;background:var(--acc)"></div></div>
+        <div class="prog-lbl"><span id="prog-l"></span><span id="prog-r"></span></div>
+      </div>
+      <div id="learn-body">
+        <div class="empty" style="padding-top:24px">
+          <div class="empty-ico">🎯</div>
+          <div class="empty-t">Gotowy do nauki?</div>
+          <div class="empty-s">Wybierz tryb powyżej i kliknij Start</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="view" id="v-cards">
+      <div class="vh"><div class="vt">Fiszki</div></div>
+      <div class="search">
+        <span style="color:var(--tx3);font-size:16px">🔍</span>
+        <input id="search-inp" type="search" placeholder="Szukaj po treści, tagach…" oninput="renderCards()">
+        <span id="search-count" style="font-size:12px;color:var(--tx3)"></span>
+      </div>
+      <div id="tag-filter" style="padding:0 16px 10px;display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div class="sec-hdr">
+        <span class="sec-ttl">Zestawy</span>
+        <button class="btn" onclick="openAddDeck()">＋ Zestaw</button>
+      </div>
+      <div id="decks-list"></div>
+      <div class="sec-hdr" style="margin-top:6px">
+        <span class="sec-ttl" id="cards-sec-ttl">Fiszki</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn" onclick="openScan()" title="Skanuj">📷</button>
+          <button class="btn" onclick="openAddOcc()" title="Occlusion">🖼</button>
+          <button class="btn acc" onclick="openAddCard()">＋ Fiszka</button>
+        </div>
+      </div>
+      <div id="cards-list"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="view" id="v-stats">
+      <div class="vh"><div class="vt">Postępy</div></div>
+      <div class="stat-grid" id="stats-grid"></div>
+
+      <!-- KALIBRACJA -->
+      <div class="card" style="margin-bottom:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">🎯 Kalibracja pewności siebie</div>
+        <div class="calib-wrap" style="padding:0;margin:0 0 12px" id="calib-tiles"></div>
+        <div id="calib-bars"></div>
+        <div style="font-size:11px;color:var(--tx3)">Jak trafnie oceniasz swoją wiedzę przed odsłonięciem</div>
+      </div>
+
+      <div class="card" style="margin-top:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Ten tydzień</div>
+        <div class="bars" id="week-bars"></div>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Prognoza — 14 dni</div>
+        <div class="fc" id="forecast"></div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:6px">Fiszki do powtórzenia każdego dnia</div>
+      </div>
+      <div class="card" style="margin-top:4px" id="deck-prog"></div>
+
+      <!-- ANALIZA BŁĘDÓW -->
+      <div style="padding:0 16px;margin-bottom:12px">
+        <button class="btn pur" onclick="analyzeErrors()" id="analyze-btn" style="width:100%;justify-content:center">
+          🤖 Analizuj moje słabe punkty (AI)
+        </button>
+      </div>
+      <div id="analysis-result"></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="view" id="v-admin">
+      <div class="vh"><div class="vt">Admin</div><div class="vs">Import, eksport, ustawienia</div></div>
+      <div class="adm-sec">
+        <div class="adm-ttl">⚡ Smart Raw Paste</div>
+        <div class="adm-card">
+          <div class="fmt-hint">Nazwa | Wartość | Jednostka | Min | Maks | Kategoria
+Moduł Younga stali | 210 | GPa | 100 | 400 | Materiały</div>
+          <textarea class="paste-area" id="paste-area" placeholder="Wklej dane tutaj…"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn acc" onclick="parsePaste()" style="flex:1;justify-content:center">⚡ Importuj</button>
+            <button class="btn" onclick="document.getElementById('paste-area').value=''" style="flex:1;justify-content:center">Wyczyść</button>
+          </div>
+        </div>
+      </div>
+      <div class="adm-sec">
+        <div class="adm-ttl">🔧 Baza Inżynierska (<span id="eng-count">0</span> zmiennych)</div>
+        <div class="adm-card">
+          <div id="eng-list"></div>
+          <button class="btn danger" onclick="clearEngDB()" style="margin-top:10px;width:100%;justify-content:center">🗑 Wyczyść bazę</button>
+        </div>
+      </div>
+      <div class="adm-sec">
+        <div class="adm-ttl">📦 Import / Eksport JSON</div>
+        <div class="adm-card" style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn" onclick="exportJSON()" style="justify-content:center">📤 Eksportuj wszystko</button>
+          <label class="btn" style="justify-content:center;cursor:pointer">📥 Importuj z pliku JSON<input type="file" accept=".json" onchange="importJSON(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="adm-sec">
+        <div class="adm-ttl">🔑 Klucz API Anthropic</div>
+        <div class="adm-card">
+          <div style="font-size:13px;color:var(--tx2);margin-bottom:12px;line-height:1.5">
+            Potrzebny do: 📷 skanowania, 🧠 trybu Feynmana, 🔬 pytań transferowych, 🤖 analizy błędów.<br>
+            Znajdziesz na <strong style="color:var(--tx)">console.anthropic.com</strong> → API Keys
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div id="key-status" style="flex:1;font-size:13px;color:var(--tx2)">Nie ustawiony</div>
+            <button class="btn" onclick="openApiKey()">Zmień</button>
+          </div>
+        </div>
+      </div>
+      <div class="adm-sec">
+        <div class="adm-ttl">⌨️ Skróty klawiszowe</div>
+        <div class="adm-card" style="font-size:13px;color:var(--tx2);line-height:2.2;font-family:'JetBrains Mono',monospace">
+          <b style="color:var(--acc)">Spacja</b> — odwróć / oceń pewność<br>
+          <b style="color:var(--acc)">1</b> — Nie pamiętałem &nbsp;
+          <b style="color:var(--acc)">2</b> — Tak sobie &nbsp;
+          <b style="color:var(--acc)">3</b> — Umiałem
+        </div>
+      </div>
+      <div class="adm-sec">
+        <button class="btn danger" onclick="clearAll()" style="width:100%;justify-content:center">🗑 Usuń wszystkie dane</button>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--tx3);padding:0 20px 20px;font-family:'JetBrains Mono',monospace">Fiszki Pro v3.0 · SM-2 · KaTeX · Feynman · Offline PWA</div>
+    </div>
+
+  </div>
+  <nav class="bnav">
+    <button class="ni active" onclick="nav('learn',this)">
+      <span class="ni-ico">🧠</span><span>Nauka</span>
+      <span class="ni-badge" id="due-badge" style="display:none"></span>
+    </button>
+    <button class="ni" onclick="nav('cards',this)">
+      <span class="ni-ico">🗂</span><span>Fiszki</span>
+    </button>
+    <button class="ni" onclick="nav('stats',this)">
+      <span class="ni-ico">📊</span><span>Postępy</span>
+    </button>
+    <button class="ni" onclick="nav('admin',this)">
+      <span class="ni-ico">⚙️</span><span>Admin</span>
+    </button>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="sheet" id="sheet"><div class="sh-handle"></div><div id="sheet-body"></div></div>
+</div>
+
+<div id="occ-editor">
+  <div class="occ-toolbar">
+    <button class="btn" onclick="closeOccEditor()">← Wróć</button>
+    <span style="flex:1;font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Image Occlusion</span>
+    <button class="btn" onclick="clearOccRects()">Wyczyść</button>
+    <button class="btn acc" onclick="saveOccCard()">Zapisz</button>
+  </div>
+  <div class="occ-canvas-wrap"><canvas id="occ-canvas"></canvas></div>
+  <div class="occ-rects-list" id="occ-rects-list"><span style="font-size:12px;color:var(--tx3)">Zaznacz obszary na obrazku</span></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+'use strict';
+
+/* ═══ PRELOADED DATA ═══════════════════════════════════════════ */
+const DECK_COLORS=['#74b9ff','#cc5de8','#ffa94d','#51cf66','#ff5f6d','#b8ff45','#20c997','#f06595'];
+const OCC_COLORS=['#e64980','#be4bdb','#7950f2','#4c6ef5','#228be6','#15aabf','#12b886','#fab005'];
+const PRELOADED_ENG=[
+  {id:'e01',name:'Moduł Younga — stal',value:210,unit:'GPa',min:100,max:400,cat:'Materiały',desc:'Stal konstrukcyjna 190–220 GPa'},
+  {id:'e02',name:'Moduł Younga — aluminium',value:70,unit:'GPa',min:30,max:150,cat:'Materiały',desc:'Stopy Al 60–80 GPa'},
+  {id:'e03',name:'Granica plastyczności 42CrMo4',value:650,unit:'MPa',min:200,max:1500,cat:'Materiały',desc:'Stan ulepszony cieplnie'},
+  {id:'e04',name:'Wytrzymałość 42CrMo4 (Rm)',value:900,unit:'MPa',min:400,max:1800,cat:'Materiały',desc:'Stan ulepszony cieplnie'},
+  {id:'e05',name:'Gęstość stali',value:7850,unit:'kg/m³',min:5000,max:12000,cat:'Materiały',desc:'Stal węglowa'},
+  {id:'e06',name:'Współczynnik Poissona — stal',value:0.3,unit:'—',min:0.1,max:0.5,cat:'Materiały',desc:'Zakres 0.27–0.32'},
+  {id:'e07',name:'Moduł ścinania G — stal',value:80,unit:'GPa',min:30,max:150,cat:'Materiały',desc:'G = E/[2(1+ν)]'},
+  {id:'e08',name:'Przyspieszenie grawitacyjne g',value:9.81,unit:'m/s²',min:9.0,max:10.5,cat:'Stałe',desc:'Standard: 9.80665 m/s²'},
+  {id:'e09',name:'Stała Boltzmanna k_B',value:1.381e-23,unit:'J/K',min:1e-24,max:1e-22,cat:'Stałe',desc:'1.380649×10⁻²³ J/K'},
+  {id:'e10',name:'Stała gazowa R',value:8.314,unit:'J/(mol·K)',min:5,max:15,cat:'Stałe',desc:'8.31446 J/(mol·K)'},
+  {id:'e11',name:'Współczynnik bezpieczeństwa SF',value:1.5,unit:'—',min:1.0,max:3.5,cat:'Bezpieczeństwo',desc:'Zginanie kół, ISO 6336'},
+  {id:'e12',name:'Ciepło właściwe wody c_p',value:4186,unit:'J/(kg·K)',min:1000,max:8000,cat:'Termo',desc:'25°C'},
+  {id:'e13',name:'Przewodność cieplna stali λ',value:50,unit:'W/(m·K)',min:10,max:200,cat:'Termo',desc:'Stal węglowa'},
+  {id:'e14',name:'Rozszerzalność cieplna stali α',value:12e-6,unit:'1/K',min:5e-6,max:30e-6,cat:'Termo',desc:'α≈12×10⁻⁶ K⁻¹'},
+];
+const SEED_CARDS=[
+  {id:'sc1',deckId:'d1',front:'Co to jest **naprężenie** normalne?',back:'$$\\sigma = \\frac{F}{A}$$\n\n- **F** — siła [N]\n- **A** — pole przekroju [m²]',tags:['#wzory','#wytrzymałość']},
+  {id:'sc2',deckId:'d1',front:'Prawo Hooke\'a',back:'$$\\sigma = E \\cdot \\varepsilon$$\n\n**E** — moduł Younga, **ε** — odkształcenie',tags:['#wzory','#sprężystość']},
+  {id:'sc3',deckId:'d2',front:'Całka Fouriera',back:'$$f(x)=\\int_{-\\infty}^{\\infty}\\hat{f}(\\xi)\\,e^{2\\pi i\\xi x}\\,d\\xi$$',tags:['#analiza','#wzory']},
+  {id:'sc4',deckId:'d3',front:'Pierwsza zasada termodynamiki',back:'$$\\Delta U = Q - W$$\n\nZmiana energii = ciepło − praca',tags:['#termodynamika']},
+];
+
+/* ═══ STATE ════════════════════════════════════════════════════ */
+let DB={decks:[],cards:[],engVars:[],stats:{totalReviews:0,streak:0,lastDate:null,weekData:[0,0,0,0,0,0,0],xp:0,level:1,calibration:[]}};
+
+function today(){return new Date().toISOString().split('T')[0]}
+function addDays(d,n){let dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().split('T')[0]}
+function load(){
+  try{let r=localStorage.getItem('fp_db');if(r){DB=JSON.parse(r);if(!DB.stats.calibration)DB.stats.calibration=[];if(!DB.engVars)DB.engVars=[];}else seed();}
+  catch(e){seed()}
+  if(!DB.engVars||!DB.engVars.length)DB.engVars=[...PRELOADED_ENG];
+}
+function save(){localStorage.setItem('fp_db',JSON.stringify(DB))}
+function seed(){
+  DB.decks=[{id:'d1',name:'Mechanika i WM',color:'#74b9ff'},{id:'d2',name:'Matematyka',color:'#cc5de8'},{id:'d3',name:'Termodynamika',color:'#ffa94d'}];
+  let sr={ef:2.5,interval:0,reps:0,nextReview:null,lastReview:null,status:'new',reviews:0,type:'basic'};
+  DB.cards=SEED_CARDS.map(c=>({...c,...sr}));
+  DB.engVars=[...PRELOADED_ENG];
+  DB.stats={totalReviews:0,streak:3,lastDate:today(),weekData:[0,4,6,3,0,7,5],xp:180,level:2,calibration:[]};
+  save();
+}
+
+/* ═══ UTILS ════════════════════════════════════════════════════ */
+function uid(){return '_'+Math.random().toString(36).slice(2)+Date.now().toString(36)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function fmtVal(v){let a=Math.abs(v);if(a===0)return'0';if(a>=1e9)return(v/1e9).toPrecision(3)+'×10⁹';if(a>=1e6)return(v/1e6).toPrecision(3)+'×10⁶';if(a>=1e3)return(v/1e3).toPrecision(3)+'×10³';if(a<0.001)return v.toExponential(2);return Number.isInteger(v)?String(v):v.toPrecision(3)}
+function getAllTags(){let s=new Set();DB.cards.forEach(c=>(c.tags||[]).forEach(t=>s.add(t)));return[...s].sort()}
+function getDeckCards(id){return DB.cards.filter(c=>c.deckId===id)}
+
+/* ═══ SM-2 ═════════════════════════════════════════════════════ */
+function applySM2(card,q){
+  let ef=card.ef||2.5,interval=card.interval||0,reps=card.reps||0;
+  if(q<3){reps=0;interval=1;}
+  else{ef=Math.max(1.3,ef+0.1-(5-q)*(0.08+(5-q)*0.02));if(reps===0)interval=1;else if(reps===1)interval=6;else interval=Math.round(interval*ef);reps++;}
+  let nr=new Date();nr.setDate(nr.getDate()+interval);
+  return{...card,ef,interval,reps,nextReview:nr.toISOString().split('T')[0],lastReview:today(),status:q>=5?'known':q>=3?'review':'learning',reviews:(card.reviews||0)+1};
+}
+function isCardDue(c){return!c.nextReview||c.nextReview<=today()}
+function getDueCount(){return DB.cards.filter(isCardDue).length}
+function getSessionCards(deckIds,tagFilter,dueOnly=true){
+  let cards=DB.cards.filter(c=>{
+    if(deckIds&&deckIds.length&&!deckIds.includes(c.deckId))return false;
+    if(tagFilter&&tagFilter.size>0){let ct=new Set(c.tags||[]);if(![...tagFilter].some(t=>ct.has(t)))return false}
+    if(dueOnly&&!isCardDue(c))return false;
+    return true;
+  });
+  return shuffle(cards);
+}
+function getForecast(days){let r=[];for(let i=0;i<days;i++){let d=addDays(today(),i);r.push(DB.cards.filter(c=>c.nextReview&&c.nextReview===d).length)}return r}
+
+/* ═══ RENDERING ════════════════════════════════════════════════ */
+marked.setOptions({breaks:true,gfm:true});
+function renderMD(t){return marked.parse(t||'')}
+function renderMath(el){if(!el||!window.renderMathInElement)return;try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})}catch(e){}}
+
+/* ═══════════════════════════════════════════════════════════════
+   🤖 CORE AI HELPER — to jest serce wszystkich funkcji AI
+   Każda funkcja AI używa tej jednej metody z innym promptem
+═══════════════════════════════════════════════════════════════ */
+async function callClaude(systemPrompt, userMessage, maxTokens=1000){
+  let key=localStorage.getItem('fp_key')||'';
+  if(!key){toast('⚠️ Ustaw klucz API w zakładce Admin');return null}
+  try{
+    let res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:maxTokens,
+        system:systemPrompt,
+        messages:[{role:'user',content:userMessage}]
+      })
+    });
+    let data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    return(data.content||[]).map(i=>i.text||'').join('');
+  }catch(e){toast('Błąd API: '+e.message);return null}
+}
+
+/* ═══ NAV ══════════════════════════════════════════════════════ */
+let _curView='learn';
+function nav(name,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('v-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  _curView=name;
+  if(name==='learn')renderLearnControls();
+  if(name==='cards'){renderDecks();renderCards()}
+  if(name==='stats')renderStats();
+  if(name==='admin')renderAdmin();
+}
+
+/* ═══ LEARN ════════════════════════════════════════════════════ */
+let learnMode='deck';
+let sessionTags=new Set();
+function setMode(m,btn){
+  learnMode=m;
+  document.querySelectorAll('#mode-seg .sb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLearnControls();
+  document.getElementById('learn-body').innerHTML='';
+  document.getElementById('learn-prog').style.display='none';
+}
+function renderLearnControls(){
+  let el=document.getElementById('learn-ctrl');
+  let decks=DB.decks;
+  if(learnMode==='deck'){
+    el.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="pill-sel" id="lc-deck">${decks.map(d=>`<option value="${d.id}">${esc(d.name)} (${getDeckCards(d.id).length})</option>`).join('')}</select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tx2);cursor:pointer">
+        <input type="checkbox" id="lc-due" checked style="accent-color:var(--acc)"> Tylko zaległe
+      </label>
+    </div>
+    <div style="margin-top:10px"><button class="btn-main" onclick="startDeckSession()">▶ Start</button></div>`;
+  }else if(learnMode==='mix'){
+    el.innerHTML=`<div class="chk-group">${decks.map(d=>`<label class="chk-row"><input type="checkbox" class="mix-cb" value="${d.id}" checked style="accent-color:var(--acc)"><span class="deck-dot" style="background:${d.color}"></span><span>${esc(d.name)}</span><span style="font-size:12px;color:var(--tx2);margin-left:auto">${getDeckCards(d.id).length}</span></label>`).join('')}</div>
+    <div style="margin-top:10px"><button class="btn-main" onclick="startMixSession()">▶ Start Miks</button></div>`;
+  }else if(learnMode==='tags'){
+    let tags=getAllTags();
+    el.innerHTML=tags.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${tags.map(t=>`<span class="tag${sessionTags.has(t)?' sel':''}" onclick="toggleSesTag(this,'${esc(t)}')">${esc(t)}</span>`).join('')}</div><button class="btn-main" onclick="startTagSession()">▶ Start z tagami</button>`:`<div style="font-size:13px;color:var(--tx2)">Brak tagów. Dodaj tagi do fiszek.</div>`;
+  }else if(learnMode==='feynman'){
+    el.innerHTML=`<div style="background:rgba(184,255,69,.08);border:.5px solid rgba(184,255,69,.2);border-radius:var(--rsm);padding:12px;margin-bottom:10px;font-size:13px;color:var(--tx2);line-height:1.6">
+      <b style="color:var(--acc)">Tryb Feynmana</b> — zobaczysz pytanie, napiszesz odpowiedź własnymi słowami, a AI oceni co wiesz i czego brakuje.
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="pill-sel" id="lc-fdeck">${decks.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select>
+    </div>
+    <div style="margin-top:10px"><button class="btn-main" onclick="startFeynmanSession()">🧠 Start Feynman</button></div>`;
+  }else if(learnMode==='eng'){
+    el.innerHTML=`<div style="font-size:13px;color:var(--tx2);margin-bottom:10px"><b style="color:var(--tx)">${DB.engVars.length}</b> zmiennych. Suwak log-skalowy, ocena rzędu wielkości.</div>
+    <button class="btn-main" onclick="startEngSession()">▶ Start Intuicja</button>`;
+  }
+}
+function toggleSesTag(el,tag){sessionTags.has(tag)?sessionTags.delete(tag):sessionTags.add(tag);el.classList.toggle('sel')}
+
+/* ═══ SESSION ══════════════════════════════════════════════════ */
+let S={cards:[],index:0,flipped:false,results:{good:0,ok:0,bad:0},confidence:null,occRevealed:new Set()};
+
+function startDeckSession(){
+  let deckId=document.getElementById('lc-deck')?.value;
+  let dueOnly=document.getElementById('lc-due')?.checked!==false;
+  let cards=getSessionCards([deckId],null,dueOnly);
+  if(!cards.length){toast('Brak zaległych fiszek 🎉');return}
+  S={cards,index:0,flipped:false,results:{good:0,ok:0,bad:0},confidence:null,occRevealed:new Set()};
+  renderSessionCard();
+}
+function startMixSession(){
+  let ids=[...document.querySelectorAll('.mix-cb:checked')].map(e=>e.value);
+  if(!ids.length){toast('Wybierz zestaw');return}
+  let cards=getSessionCards(ids,null,true);
+  if(!cards.length){toast('Brak zaległych fiszek');return}
+  S={cards,index:0,flipped:false,results:{good:0,ok:0,bad:0},confidence:null,occRevealed:new Set()};
+  renderSessionCard();
+}
+function startTagSession(){
+  if(!sessionTags.size){toast('Wybierz tag');return}
+  let cards=getSessionCards(null,sessionTags,true);
+  if(!cards.length){toast('Brak zaległych fiszek z tymi tagami');return}
+  S={cards,index:0,flipped:false,results:{good:0,ok:0,bad:0},confidence:null,occRevealed:new Set()};
+  renderSessionCard();
+}
+
+function renderSessionCard(){
+  let body=document.getElementById('learn-body');
+  let prog=document.getElementById('learn-prog');
+  let {cards,index}=S;
+  if(index>=cards.length){endSession(body,prog);return}
+  prog.style.display='block';
+  let pct=Math.round(index/cards.length*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-l').textContent=`${index+1} / ${cards.length}`;
+  document.getElementById('prog-r').textContent=`${pct}%`;
+  let card=cards[index];
+  if(card.type==='occlusion'){renderOccCard(card);return}
+  let sc={new:'s-new',learning:'s-lrn',review:'s-rev',known:'s-knw'}[card.status||'new'];
+  let sl={new:'Nowa',learning:'W nauce',review:'Powtórka',known:'Znam'}[card.status||'new'];
+  let tags=(card.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+
+  // KALIBRACJA — pokaż przyciski pewności zanim fiszka się odwróci
+  let confHtml='';
+  if(!S.confidence&&!S.flipped){
+    confHtml=`
+      <div class="conf-label">Jak pewny jesteś odpowiedzi?</div>
+      <div class="conf-row">
+        <button class="conf-btn c1" onclick="setConf(1)"><span class="ico">❓</span>Nie wiem</button>
+        <button class="conf-btn c2" onclick="setConf(2)"><span class="ico">🤔</span>Chyba wiem</button>
+        <button class="conf-btn c3" onclick="setConf(3)"><span class="ico">✅</span>Wiem!</button>
+      </div>`;
+  }
+
+  body.innerHTML=`
+    ${confHtml}
+    <div class="flip-scene" style="${!S.confidence&&!S.flipped?'opacity:.4;pointer-events:none':''}">
+      <div class="flip-card${S.flipped?' flipped':''}" id="flip-c" onclick="${S.confidence||S.flipped?'flipCard()':''}">
+        <div class="face face-front">
+          <span class="face-status ${sc}">${sl}</span>
+          <div class="face-lbl">Pytanie</div>
+          <div class="face-content" id="fc-front">${renderMD(card.front)}</div>
+          <div class="face-hint">${S.confidence?'Dotknij aby odsłonić':''}</div>
+          ${tags?`<div class="face-tags">${tags}</div>`:''}
+        </div>
+        <div class="face face-back">
+          <div class="face-lbl">Odpowiedź</div>
+          <div class="face-content" id="fc-back">${renderMD(card.back)}</div>
+        </div>
+      </div>
+    </div>
+    ${S.flipped?`
+    <div style="padding:0 16px 6px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn pur" onclick="showTransferQuestion()" id="transfer-btn">🔬 Pytanie praktyczne (AI)</button>
+    </div>
+    <div id="transfer-area"></div>
+    <div class="rating-row">
+      <button class="rb bad" onclick="rate(1)"><span class="ico">✗</span><span>Nie pamiętałem</span><small>1</small></button>
+      <button class="rb ok" onclick="rate(3)"><span class="ico">〜</span><span>Tak sobie</span><small>2</small></button>
+      <button class="rb good" onclick="rate(5)"><span class="ico">✓</span><span>Umiałem</span><small>3</small></button>
+    </div>`:'<div style="height:10px"></div>'}`;
+
+  renderMath(document.getElementById('fc-front'));
+  renderMath(document.getElementById('fc-back'));
+}
+
+/* ═══ KALIBRACJA PEWNOŚCI ══════════════════════════════════════ */
+function setConf(level){
+  S.confidence=level;
+  // Podświetl wybrany przycisk i odblokuj kartę
+  document.querySelectorAll('.conf-btn').forEach((b,i)=>{b.classList.remove('chosen');if(i===level-1)b.classList.add('chosen')});
+  let scene=document.querySelector('.flip-scene');
+  if(scene){scene.style.opacity='1';scene.style.pointerEvents='auto'}
+}
+
+function recordCalibration(predicted, actual){
+  // predicted: 1/2/3, actual: 1/3/5 → normalize to 1/2/3
+  let a=actual>=5?3:actual>=3?2:1;
+  DB.stats.calibration.push({date:today(),p:predicted,a});
+  // keep last 200
+  if(DB.stats.calibration.length>200)DB.stats.calibration=DB.stats.calibration.slice(-200);
+}
+
+/* ═══ FLIP & RATE ══════════════════════════════════════════════ */
+function flipCard(){S.flipped=true;renderSessionCard()}
+function rate(q){
+  let card=S.cards[S.index];
+  if(S.confidence)recordCalibration(S.confidence,q);
+  let updated=applySM2(card,q);
+  let di=DB.cards.findIndex(c=>c.id===card.id);
+  if(di>=0)DB.cards[di]=updated;
+  if(q>=5)S.results.good++;else if(q>=3)S.results.ok++;else{S.results.bad++;S.cards.push({...card})}
+  let dow=new Date().getDay();let wi=dow===0?6:dow-1;
+  DB.stats.weekData[wi]=(DB.stats.weekData[wi]||0)+1;
+  DB.stats.totalReviews=(DB.stats.totalReviews||0)+1;
+  S.index++;S.flipped=false;S.confidence=null;S.occRevealed=new Set();
+  renderSessionCard();
+}
+function endSession(body,prog){
+  prog.style.display='none';
+  let total=S.results.good+S.results.ok+S.results.bad;
+  let pct=total?Math.round(S.results.good/total*100):0;
+  awardXP(S.results.good*10+S.results.ok*5+S.results.bad*2);
+  updateStreak();
+  body.innerHTML=`<div class="done-wrap"><div class="done-ico">🎉</div><div class="done-ttl">Sesja skończona!</div><div class="done-sub">${total} fiszek powtórzonych</div>
+    <div class="done-grid">
+      <div class="done-tile"><div class="done-num" style="color:var(--grn)">${S.results.good}</div><div class="done-lbl">Umiałem</div></div>
+      <div class="done-tile"><div class="done-num" style="color:var(--amb)">${S.results.ok}</div><div class="done-lbl">Tak sobie</div></div>
+      <div class="done-tile"><div class="done-num" style="color:var(--red)">${S.results.bad}</div><div class="done-lbl">Nie pamiętałem</div></div>
+      <div class="done-tile"><div class="done-num" style="color:var(--acc)">${pct}%</div><div class="done-lbl">Skuteczność</div></div>
+    </div>
+    <button class="btn-main" onclick="renderLearnControls();document.getElementById('learn-body').innerHTML='';document.getElementById('learn-prog').style.display='none'">↩ Wróć</button>
+  </div>`;
+  updateDueBadge();save();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔬 GENERATOR PYTAŃ TRANSFEROWYCH
+   Prompt mówi AI żeby wygenerowała pytanie aplikacyjne
+   — nie "co to jest", ale "jak to zastosować w praktyce"
+═══════════════════════════════════════════════════════════════ */
+async function showTransferQuestion(){
+  let btn=document.getElementById('transfer-btn');
+  let area=document.getElementById('transfer-area');
+  if(!btn||!area)return;
+  btn.disabled=true;btn.textContent='Generuję…';
+  area.innerHTML=`<div class="ai-loading" style="padding:0 16px 8px"><span class="spin"></span>AI tworzy pytanie praktyczne…</div>`;
+
+  let card=S.cards[S.index];
+  // PROMPT: prosimy o pytanie aplikacyjne, nie definicję
+  let result=await callClaude(
+    'Jesteś ekspertem od dydaktyki inżynierskiej. Generujesz pytania transferowe — takie które wymagają zastosowania wiedzy w nowym kontekście, a nie tylko jej przytoczenia. Odpowiadaj TYLKO po polsku. Bądź konkretny i zwięzły.',
+    `Fiszka:\nPrzód: ${card.front}\nTył: ${card.back}\n\nWygeneruj JEDNO konkretne pytanie praktyczne/aplikacyjne dla studenta inżynierii. Pytanie powinno wymagać użycia tej wiedzy w realnym scenariuszu inżynierskim. Następnie w nowej linii po "---" napisz krótką wzorcową odpowiedź (2-3 zdania).`
+  );
+
+  if(!result){area.innerHTML='';btn.disabled=false;btn.textContent='🔬 Pytanie praktyczne (AI)';return}
+
+  let parts=result.split('---');
+  let question=parts[0].trim();
+  let answer=parts[1]?parts[1].trim():'';
+
+  area.innerHTML=`<div class="transfer-card">
+    <div class="transfer-lbl">🔬 Pytanie Transferowe</div>
+    <div class="transfer-q">${esc(question)}</div>
+    ${answer?`<button onclick="let a=this.nextElementSibling;a.style.display=a.style.display==='block'?'none':'block';this.textContent=a.style.display==='block'?'▲ Ukryj odpowiedź':'▼ Pokaż wzorcową odpowiedź'" style="margin-top:10px;background:none;border:none;color:var(--pur);font-size:12px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700">▼ Pokaż wzorcową odpowiedź</button>
+    <div class="transfer-ans">${esc(answer)}</div>`:''}
+  </div>`;
+  btn.disabled=false;btn.textContent='🔬 Pytanie praktyczne (AI)';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🧠 TRYB FEYNMANA
+   Student pisze wyjaśnienie → AI ocenia i wskazuje luki
+═══════════════════════════════════════════════════════════════ */
+let feynSes={cards:[],index:0};
+function startFeynmanSession(){
+  let deckId=document.getElementById('lc-fdeck')?.value;
+  let cards=shuffle(getDeckCards(deckId));
+  if(!cards.length){toast('Brak fiszek w tym zestawie');return}
+  feynSes={cards,index:0};
+  renderFeynmanCard();
+  document.getElementById('learn-prog').style.display='block';
+}
+function renderFeynmanCard(){
+  let {cards,index}=feynSes;
+  let body=document.getElementById('learn-body');
+  let prog=document.getElementById('learn-prog');
+  if(index>=cards.length){
+    prog.style.display='none';
+    body.innerHTML=`<div class="done-wrap"><div class="done-ico">🏆</div><div class="done-ttl">Wszystkie przerobione!</div><div class="done-sub">Doskonałe ćwiczenie trybu Feynmana.</div><button class="btn-main" onclick="startFeynmanSession()">🔀 Powtórz</button></div>`;
+    return;
+  }
+  prog.style.display='block';
+  let p=Math.round(index/cards.length*100);
+  document.getElementById('prog-fill').style.width=p+'%';
+  document.getElementById('prog-l').textContent=`${index+1} / ${cards.length}`;
+  document.getElementById('prog-r').textContent=`${p}%`;
+  let card=cards[index];
+  body.innerHTML=`
+    <div class="feynman-wrap">
+      <div class="feynman-q">
+        <div class="feynman-q-lbl">Pytanie</div>
+        <div class="feynman-q-text" id="fq-text">${renderMD(card.front)}</div>
+      </div>
+      <textarea class="feynman-ta" id="feynman-inp" placeholder="Wyjaśnij to własnymi słowami, tak jakbyś tłumaczył komuś innemu. Im więcej napiszesz, tym lepsza ocena AI…"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-main" onclick="submitFeynman()" id="feyn-btn">🧠 Oceń moje wyjaśnienie</button>
+        <button class="btn" onclick="feynSes.index++;renderFeynmanCard()">Pomiń →</button>
+      </div>
+      <div id="feyn-result"></div>
+    </div>`;
+  renderMath(document.getElementById('fq-text'));
+}
+
+async function submitFeynman(){
+  let inp=document.getElementById('feynman-inp')?.value.trim();
+  if(!inp||inp.length<10){toast('Napisz przynajmniej kilka zdań');return}
+  let btn=document.getElementById('feyn-btn');
+  let res=document.getElementById('feyn-result');
+  btn.disabled=true;btn.textContent='AI ocenia…';
+  res.innerHTML=`<div class="ai-loading"><span class="spin"></span>Claude analizuje Twoje wyjaśnienie…</div>`;
+
+  let card=feynSes.cards[feynSes.index];
+  // PROMPT: AI gra rolę mentora, ocenia i wskazuje co brakuje
+  let result=await callClaude(
+    'Jesteś mentorem akademickim oceniającym wyjaśnienia studentów. Jesteś wymagający ale konstruktywny. Zawsze odpowiadasz po polsku. Zwracaj szczególną uwagę na poprawność merytoryczną, kompletność i głębię zrozumienia. Odpowiadaj WYŁĄCZNIE w formacie JSON.',
+    `Oryginalna fiszka:
+Pytanie: ${card.front}
+Wzorcowa odpowiedź: ${card.back}
+
+Wyjaśnienie studenta:
+${inp}
+
+Oceń wyjaśnienie i odpowiedz TYLKO jako JSON (bez żadnych backtick\u00f3w):
+{
+  "score": <liczba 1-10>,
+  "verdict": "<jedno zdanie ogólnej oceny>",
+  "correct": "<co student powiedział poprawnie>",
+  "missing": "<czego brakuje lub co jest niekompletne>",
+  "wrong": "<co jest błędne, lub 'Brak błędów'>",
+  "tip": "<jedna konkretna wskazówka co poprawić>"
+}`
+  ,800);
+
+  if(!result){res.innerHTML='';btn.disabled=false;btn.textContent='🧠 Oceń moje wyjaśnienie';return}
+
+  try{
+    let clean=result.replace(/```json|```/g,'').trim();
+    let data=JSON.parse(clean);
+    let scoreColor=data.score>=8?'var(--grn)':data.score>=5?'var(--amb)':'var(--red)';
+    res.innerHTML=`<div class="feynman-result">
+      <div class="feynman-score" style="color:${scoreColor}">${data.score}/10 — ${esc(data.verdict||'')}</div>
+      ${data.correct?`<div class="feynman-section"><div class="feynman-section-lbl feynman-ok">✅ Co masz dobrze</div><p>${esc(data.correct)}</p></div>`:''}
+      ${data.missing?`<div class="feynman-section"><div class="feynman-section-lbl feynman-miss">⚠️ Czego brakuje</div><p>${esc(data.missing)}</p></div>`:''}
+      ${data.wrong&&data.wrong!=='Brak błędów'?`<div class="feynman-section"><div class="feynman-section-lbl feynman-err">❌ Błędy</div><p>${esc(data.wrong)}</p></div>`:''}
+      ${data.tip?`<div class="feynman-section"><div class="feynman-section-lbl" style="color:var(--acc)">💡 Wskazówka</div><p>${esc(data.tip)}</p></div>`:''}
+      <button class="btn-main" onclick="feynSes.index++;renderFeynmanCard()" style="margin-top:12px">Następna →</button>
+    </div>`;
+    // XP za Feynmana
+    awardXP(data.score*3);
+  }catch(e){
+    res.innerHTML=`<div style="padding:12px;color:var(--amb)">Błąd parsowania odpowiedzi AI. Spróbuj jeszcze raz.</div>`;
+  }
+  btn.disabled=false;btn.textContent='🧠 Oceń moje wyjaśnienie';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🤖 ANALIZA BŁĘDÓW
+   AI analizuje wzorce błędów w historii nauki
+═══════════════════════════════════════════════════════════════ */
+async function analyzeErrors(){
+  let btn=document.getElementById('analyze-btn');
+  let res=document.getElementById('analysis-result');
+  btn.disabled=true;btn.textContent='🤖 Analizuję…';
+  res.innerHTML=`<div class="ai-loading" style="padding:0 16px"><span class="spin"></span>AI analizuje Twoje słabe punkty…</div>`;
+
+  // Zbierz najsłabsze karty (najniższe ef, najwięcej błędów)
+  let weakCards=DB.cards
+    .filter(c=>c.reviews>0)
+    .sort((a,b)=>(a.ef||2.5)-(b.ef||2.5))
+    .slice(0,15);
+
+  if(weakCards.length<3){
+    res.innerHTML=`<div style="padding:0 16px 12px;font-size:13px;color:var(--tx2)">Za mało danych. Powtórz przynajmniej kilkanaście fiszek.</div>`;
+    btn.disabled=false;btn.textContent='🤖 Analizuj moje słabe punkty (AI)';
+    return;
+  }
+
+  // Podsumowanie statystyk kalibracji
+  let calib=DB.stats.calibration||[];
+  let calibSummary='';
+  if(calib.length>10){
+    let overconf=calib.filter(c=>c.p===3&&c.a<=2).length;
+    let underconf=calib.filter(c=>c.p===1&&c.a>=2).length;
+    calibSummary=`\nKalibracja pewności: ${overconf} razy byłem zbyt pewny siebie, ${underconf} razy zbyt niepewny z ${calib.length} prób.`;
+  }
+
+  // Lista słabych kart ze statystykami
+  let cardsList=weakCards.map(c=>`- "${c.front.slice(0,60)}" | tagi: ${(c.tags||[]).join(',')||'brak'} | ef: ${(c.ef||2.5).toFixed(2)} | powtórzeń: ${c.reviews} | status: ${c.status||'new'}`).join('\n');
+
+  // PROMPT: AI szuka wzorców i daje konkretne rekomendacje
+  let result=await callClaude(
+    'Jesteś ekspertem od uczenia się i dydaktyki. Analizujesz dane nauki studenta i dajesz konkretne, praktyczne rekomendacje. Odpowiadasz WYŁĄCZNIE po polsku. Bądź bezpośredni i konkretny — nie dawaj ogólnych porad.',
+    `Student uczy się przy pomocy fiszek. Oto jego 15 najsłabszych kart (posortowane od najtrudniejszej):
+
+${cardsList}
+${calibSummary}
+
+Łączna liczba powtórzeń: ${DB.stats.totalReviews}
+Zestawy: ${DB.decks.map(d=>d.name).join(', ')}
+
+Przeanalizuj wzorce i odpowiedz w formacie Markdown:
+1. **Główne słabe obszary** — jakie tematy/typy wiedzy sprawiają problemy
+2. **Analiza wzorców** — czy widać wspólny mianownik błędów
+3. **Konkretne rekomendacje** — co zrobić żeby się poprawić (3-4 punkty)
+4. **Priorytet** — którą fiszkę/temat naprawić NAJPIERW i dlaczego`,
+  1200);
+
+  if(!result){res.innerHTML='';btn.disabled=false;btn.textContent='🤖 Analizuj moje słabe punkty (AI)';return}
+
+  res.innerHTML=`<div class="analysis-result">
+    <div class="analysis-ttl">🤖 Analiza AI — Twoje słabe punkty</div>
+    <div class="analysis-body">${renderMD(result)}</div>
+  </div>`;
+  btn.disabled=false;btn.textContent='🤖 Analizuj ponownie (AI)';
+}
+
+/* ═══ SLIDER (INTUICJA) ════════════════════════════════════════ */
+let engSes={vars:[],index:0};
+function startEngSession(){
+  if(!DB.engVars.length){toast('Brak zmiennych. Dodaj przez Admin → Smart Paste.');return}
+  engSes={vars:shuffle(DB.engVars),index:0};
+  renderEngCard();
+  document.getElementById('learn-prog').style.display='block';
+}
+function isLog(mn,mx){return mn>0&&mx>0&&mx/mn>100}
+function sToV(p,mn,mx){if(isLog(mn,mx)){let a=Math.log10(mn),b=Math.log10(mx);return Math.pow(10,a+(p/100)*(b-a))}return mn+(p/100)*(mx-mn)}
+function scoreEng(e,c){if(c===0)return{s:5,lbl:'🎯 Idealnie!',col:'#51cf66'};let le=Math.abs(Math.log10(e/c));if(le<0.05)return{s:5,lbl:'🎯 Idealnie!',col:'#51cf66'};if(le<0.15)return{s:4,lbl:'✅ Bardzo blisko!',col:'#94d82d'};if(le<0.35)return{s:3,lbl:'👍 Dobry rząd wielkości',col:'#ffa94d'};if(le<0.6)return{s:2,lbl:'📏 Zbliżony',col:'#ff8c47'};return{s:1,lbl:'❌ Daleko',col:'#ff5f6d'}}
+function renderEngCard(){
+  let {vars,index}=engSes;
+  let body=document.getElementById('learn-body');
+  if(index>=vars.length){document.getElementById('learn-prog').style.display='none';body.innerHTML=`<div class="done-wrap"><div class="done-ico">🏆</div><div class="done-ttl">Wszystkie zmienne!</div><button class="btn-main" onclick="startEngSession()">🔀 Powtórz</button></div>`;return}
+  let p=Math.round(index/vars.length*100);
+  document.getElementById('prog-fill').style.width=p+'%';
+  document.getElementById('prog-l').textContent=`${index+1} / ${vars.length}`;
+  document.getElementById('prog-r').textContent=`${p}%`;
+  let v=vars[index];
+  body.innerHTML=`<div class="slider-card">
+    <div class="sl-cat">${esc(v.cat||'')}</div>
+    <div class="sl-name">${esc(v.name)}</div>
+    <div class="sl-desc">${esc(v.desc||'')}</div>
+    <div class="sl-value" id="sl-disp">${fmtVal(sToV(50,v.min,v.max))} <span class="sl-unit">${esc(v.unit)}</span></div>
+    <input type="range" id="sl-inp" min="0" max="100" value="50" oninput="updSl(${v.min},${v.max},'${esc(v.unit)}')">
+    <div class="sl-range"><span>${fmtVal(v.min)}</span><span>${fmtVal(v.max)}</span></div>
+    <div id="sl-res"></div>
+  </div>
+  <div style="padding:0 16px 12px"><button class="btn-main" id="sl-btn" onclick="submitSl(${v.min},${v.max},${v.value})">Sprawdź odpowiedź</button></div>`;
+}
+function updSl(mn,mx,unit){let p=parseFloat(document.getElementById('sl-inp').value);document.getElementById('sl-disp').innerHTML=`${fmtVal(sToV(p,mn,mx))} <span class="sl-unit">${esc(unit)}</span>`}
+function submitSl(mn,mx,correct){
+  let p=parseFloat(document.getElementById('sl-inp')?.value||50);
+  let est=sToV(p,mn,mx);let sc=scoreEng(est,correct);
+  document.getElementById('sl-res').innerHTML=`<div style="border-top:.5px solid var(--b1);margin-top:14px;padding-top:14px;text-align:center"><div class="sl-score-lbl" style="color:${sc.col}">${sc.lbl}</div><div class="sl-score-det">Twoja: <b>${fmtVal(est)}</b> | Prawidłowa: <b>${fmtVal(correct)}</b></div></div>`;
+  let btn=document.getElementById('sl-btn');if(btn){btn.textContent='Następna →';btn.onclick=()=>{engSes.index++;renderEngCard()}}
+}
+
+/* ═══ OCC STUDY ════════════════════════════════════════════════ */
+function renderOccCard(card){
+  let body=document.getElementById('learn-body');
+  let all=card.occlusions.every(r=>S.occRevealed.has(r.id));
+  body.innerHTML=`<div style="padding:0 16px 12px">
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:8px">Kliknij prostokąty aby odsłonić</div>
+    <div class="occ-study" style="display:inline-block;width:100%">
+      <img src="${card.imageData}" style="width:100%;display:block;border-radius:var(--r)">
+      ${card.occlusions.map((r,i)=>`<div class="occ-mask${S.occRevealed.has(r.id)?' revealed':''}" id="omask-${r.id}" style="position:absolute;left:${r.x*100}%;top:${r.y*100}%;width:${r.w*100}%;height:${r.h*100}%;background:${r.color}" onclick="revealOcc('${r.id}')">${i+1}</div>`).join('')}
+    </div>
+  </div>${all?`<div style="padding:0 16px 8px;font-size:13px;color:var(--grn)">✅ Wszystkie odsłonięte!</div><div class="rating-row"><button class="rb bad" onclick="rate(1)"><span class="ico">✗</span>Trudne</button><button class="rb ok" onclick="rate(3)"><span class="ico">〜</span>Tak sobie</button><button class="rb good" onclick="rate(5)"><span class="ico">✓</span>Łatwe</button></div>`:''}`;
+}
+function revealOcc(rid){
+  S.occRevealed.add(rid);
+  let m=document.getElementById('omask-'+rid);if(m)m.classList.add('revealed');
+  let card=S.cards[S.index];
+  if(card&&card.occlusions&&card.occlusions.every(r=>S.occRevealed.has(r.id)))renderOccCard(card);
+}
+
+/* ═══ CARDS VIEW ═══════════════════════════════════════════════ */
+let filterDeck='',filterTags=new Set();
+function renderDecks(){
+  let el=document.getElementById('decks-list');if(!el)return;
+  el.innerHTML=DB.decks.map(d=>`<div class="deck-item" onclick="selectDeck('${d.id}')"><span class="di-dot" style="background:${d.color}"></span><span class="di-name">${esc(d.name)}</span><span class="di-cnt">${getDeckCards(d.id).length}</span><button style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:4px" onclick="deleteDeck(event,'${d.id}')">🗑</button></div>`).join('')||`<div style="padding:0 16px;font-size:14px;color:var(--tx2)">Brak zestawów</div>`;
+}
+function selectDeck(id){filterDeck=filterDeck===id?'':id;renderDecks();renderCards()}
+function renderCards(){
+  let q=(document.getElementById('search-inp')?.value||'').toLowerCase().trim();
+  let cards=DB.cards.filter(c=>{
+    if(filterDeck&&c.deckId!==filterDeck)return false;
+    if(filterTags.size){let ct=new Set(c.tags||[]);if(![...filterTags].some(t=>ct.has(t)))return false}
+    if(q&&!(c.front+c.back+(c.tags||[]).join(' ')).toLowerCase().includes(q))return false;
+    return true;
+  });
+  let ttl=document.getElementById('cards-sec-ttl');if(ttl)ttl.textContent=`Fiszki (${cards.length})`;
+  let sc=document.getElementById('search-count');if(sc)sc.textContent=q?`${cards.length} wyników`:'';
+  let el=document.getElementById('cards-list');if(!el)return;
+  el.innerHTML=cards.map(c=>{
+    let sc2={new:'s-new',learning:'s-lrn',review:'s-rev',known:'s-knw'}[c.status||'new'];
+    let sl={new:'Nowa',learning:'W nauce',review:'Powtórka',known:'Znam'}[c.status||'new'];
+    let tags=(c.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+    return`<div class="ci"><div class="ci-txt"><div class="ci-front">${c.type==='occlusion'?'🖼 ':''} ${esc(c.front)}</div><div class="ci-back">${esc(c.type==='occlusion'?'[Image Occlusion]':c.back)}</div>${tags?`<div class="ci-tags">${tags}</div>`:''}</div><span class="face-status ${sc2}" style="position:static;margin-left:4px">${sl}</span><button class="ci-del" onclick="deleteCard('${c.id}')">🗑</button></div>`;
+  }).join('')||`<div class="empty" style="padding:32px 20px"><div class="empty-ico">📭</div><div class="empty-t">Brak fiszek</div><div class="empty-s">Dodaj pierwszą lub zeskanuj zdjęcie</div></div>`;
+  let tf=document.getElementById('tag-filter');if(tf)tf.innerHTML=getAllTags().map(t=>`<span class="tag${filterTags.has(t)?' sel':''}" onclick="toggleFTag('${esc(t)}')">${esc(t)}</span>`).join('');
+}
+function toggleFTag(t){filterTags.has(t)?filterTags.delete(t):filterTags.add(t);renderCards()}
+function deleteCard(id){if(!confirm('Usunąć?'))return;DB.cards=DB.cards.filter(c=>c.id!==id);save();renderCards();updateDueBadge();toast('Usunięto')}
+function deleteDeck(e,id){e.stopPropagation();if(!confirm('Usunąć zestaw i fiszki?'))return;DB.decks=DB.decks.filter(d=>d.id!==id);DB.cards=DB.cards.filter(c=>c.deckId!==id);if(filterDeck===id)filterDeck='';save();renderDecks();renderCards();renderLearnControls();toast('Usunięto')}
+
+/* ═══ ADD CARD/DECK ════════════════════════════════════════════ */
+function openAddDeck(){
+  openSheet(`<div class="sh-ttl">Nowy zestaw</div><div class="field"><label>Nazwa</label><input id="in-dn" type="text" placeholder="np. Mechanika Płynów"></div><div class="sh-actions"><button class="sh-cancel" onclick="closeSheet()">Anuluj</button><button class="sh-ok" onclick="addDeck()">Utwórz</button></div>`);
+  setTimeout(()=>document.getElementById('in-dn')?.focus(),350);
+}
+function addDeck(){let n=document.getElementById('in-dn')?.value.trim();if(!n)return;DB.decks.push({id:uid(),name:n,color:DECK_COLORS[DB.decks.length%DECK_COLORS.length]});save();closeSheet();renderDecks();renderCards();renderLearnControls();toast('Zestaw utworzony ✓')}
+function openAddCard(){
+  let did=filterDeck||DB.decks[0]?.id||'';
+  openSheet(`<div class="sh-ttl">Nowa fiszka</div>
+    <div class="field"><label>Zestaw</label><select id="in-cd">${DB.decks.map(d=>`<option value="${d.id}"${d.id===did?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+    <div class="field"><label>Przód (Markdown + $$wzory$$ obsługiwane)</label><textarea id="in-cf" placeholder="np. Co to jest naprężenie? lub $$\\sigma = F/A$$" oninput="upPrev('in-cf','pv-f')"></textarea><div class="md-prev" id="pv-f"></div></div>
+    <div class="field"><label>Tył</label><textarea id="in-cb" placeholder="Odpowiedź, definicja, wzór…" oninput="upPrev('in-cb','pv-b')"></textarea><div class="md-prev" id="pv-b"></div></div>
+    <div class="field"><label>Tagi (np. #wzory #mechanika)</label><input id="in-ct" type="text" placeholder="#wzory #teoria"></div>
+    <div class="sh-actions"><button class="sh-cancel" onclick="closeSheet()">Anuluj</button><button class="sh-ok" onclick="addCard()">Dodaj</button></div>`);
+  setTimeout(()=>document.getElementById('in-cf')?.focus(),350);
+}
+function upPrev(iid,pid){let v=document.getElementById(iid)?.value||'';let p=document.getElementById(pid);if(!p)return;if(v.length>2){p.style.display='block';p.innerHTML=renderMD(v);renderMath(p)}else p.style.display='none'}
+function addCard(){
+  let front=document.getElementById('in-cf')?.value.trim();
+  let back=document.getElementById('in-cb')?.value.trim();
+  let deckId=document.getElementById('in-cd')?.value;
+  let tagsRaw=document.getElementById('in-ct')?.value||'';
+  if(!front||!back){toast('Uzupełnij przód i tył');return}
+  let tags=tagsRaw.trim().split(/\s+/).filter(t=>t.startsWith('#')&&t.length>1);
+  DB.cards.push({id:uid(),deckId,front,back,tags,type:'basic',status:'new',reviews:0,ef:2.5,interval:0,reps:0,nextReview:null,lastReview:null});
+  save();closeSheet();renderCards();updateDueBadge();toast('Fiszka dodana ✓');
+}
+
+/* ═══ SCAN (AI PHOTO) ══════════════════════════════════════════ */
+let scanned=[];
+function openScan(){
+  let did=filterDeck||DB.decks[0]?.id||'';
+  openSheet(`<div class="sh-ttl">📷 Skanuj zdjęcie</div>
+    <p style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.5">Wgraj zdjęcie z notatek lub tablicy — AI wyciągnie fiszki automatycznie.</p>
+    <div class="field"><label>Zestaw</label><select id="sc-dk">${DB.decks.map(d=>`<option value="${d.id}"${d.id===did?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+    <input type="file" id="sc-fi" accept="image/*" style="display:none" onchange="handleScan(this)">
+    <div onclick="document.getElementById('sc-fi').click()" style="border:1.5px dashed var(--b2);border-radius:var(--rsm);padding:20px;text-align:center;cursor:pointer;margin-bottom:12px"><div style="font-size:28px;margin-bottom:6px">🖼</div><div style="font-size:13px;color:var(--tx2)">Dotknij aby wybrać zdjęcie</div></div>
+    <div id="sc-prev"></div><div id="sc-res"></div>
+    <div id="sc-act" style="display:none" class="sh-actions"><button class="sh-cancel" onclick="closeSheet()">Anuluj</button><button class="sh-ok" onclick="addScanned()">Dodaj fiszki</button></div>`);
+}
+function handleScan(inp){
+  if(!inp.files?.[0])return;
+  let r=new FileReader();
+  r.onload=async e=>{
+    let src=e.target.result,b64=src.split(',')[1],mime=inp.files[0].type||'image/jpeg';
+    document.getElementById('sc-prev').innerHTML=`<div style="display:flex;gap:10px;align-items:center;background:var(--s2);border-radius:var(--rsm);padding:10px;margin-bottom:10px"><img src="${src}" style="width:56px;height:56px;object-fit:cover;border-radius:8px"><div id="sc-st" class="ai-loading"><span class="spin"></span>AI analizuje…</div></div>`;
+    let key=localStorage.getItem('fp_key')||'';
+    if(!key){document.getElementById('sc-st').innerHTML='⚠️ Brak klucza API';return}
+    try{
+      let res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:'Na podstawie tego zdjęcia wygeneruj fiszki do nauki. Odpowiedz TYLKO jako JSON (bez backtick\u00f3w), tablica: [{"front":"...","back":"...","tags":["#tag"]}]. Maks 10 fiszek. Możesz używać Markdown i LaTeX z $$ $$. Wyciągnij najważniejsze informacje.'}]}]})});
+      let data=await res.json();if(data.error)throw new Error(data.error.message);
+      let txt=(data.content||[]).map(i=>i.text||'').join('');
+      scanned=JSON.parse(txt.replace(/```json|```/g,'').trim());
+      document.getElementById('sc-st').innerHTML=`✅ Znaleziono ${scanned.length} fiszek`;
+      document.getElementById('sc-res').innerHTML=scanned.map(c=>`<div class="ci" style="margin:0 0 6px"><div class="ci-txt"><div class="ci-front">${esc(c.front)}</div><div class="ci-back">${esc(c.back)}</div></div></div>`).join('');
+      let sa=document.getElementById('sc-act');if(sa)sa.style.display='flex';
+    }catch(err){document.getElementById('sc-st').innerHTML=`❌ ${esc(err.message)}`}
+  };r.readAsDataURL(inp.files[0]);
+}
+function addScanned(){
+  let deckId=document.getElementById('sc-dk')?.value;
+  scanned.forEach(c=>{if(c.front&&c.back)DB.cards.push({id:uid(),deckId,front:c.front,back:c.back,tags:c.tags||[],type:'basic',status:'new',reviews:0,ef:2.5,interval:0,reps:0,nextReview:null,lastReview:null})});
+  save();closeSheet();renderCards();updateDueBadge();toast(`Dodano ${scanned.length} fiszek ✓`);
+}
+
+/* ═══ OCC EDITOR ═══════════════════════════════════════════════ */
+let occState={imageData:null,rects:[],drawing:false,sx:0,sy:0,cur:null,img:null,deckId:'',tags:[]};
+function openAddOcc(){
+  let did=filterDeck||DB.decks[0]?.id||'';
+  if(!DB.decks.length){toast('Najpierw utwórz zestaw');return}
+  openSheet(`<div class="sh-ttl">🖼 Image Occlusion</div>
+    <div class="field"><label>Zestaw</label><select id="oc-dk">${DB.decks.map(d=>`<option value="${d.id}"${d.id===did?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+    <div class="field"><label>Tagi</label><input id="oc-tg" type="text" placeholder="#schemat #anatomia"></div>
+    <input type="file" id="oc-fi" accept="image/*" style="display:none" onchange="handleOccFile(this)">
+    <div onclick="document.getElementById('oc-fi').click()" style="border:1.5px dashed var(--b2);border-radius:var(--rsm);padding:20px;text-align:center;cursor:pointer"><div style="font-size:28px;margin-bottom:6px">🖼</div><div style="font-size:13px;color:var(--tx2)">Wybierz obraz</div></div>`);
+}
+function handleOccFile(inp){
+  if(!inp.files?.[0])return;
+  let deckId=document.getElementById('oc-dk')?.value||DB.decks[0]?.id;
+  let tags=(document.getElementById('oc-tg')?.value||'').trim().split(/\s+/).filter(t=>t.startsWith('#')&&t.length>1);
+  let r=new FileReader();r.onload=e=>{occState={imageData:e.target.result,rects:[],drawing:false,sx:0,sy:0,cur:null,img:null,deckId,tags};closeSheet();openOccEditor()};r.readAsDataURL(inp.files[0]);
+}
+function openOccEditor(){
+  document.getElementById('occ-editor').classList.add('open');
+  let img=new Image();
+  img.onload=()=>{
+    occState.img=img;
+    let canvas=document.getElementById('occ-canvas');
+    let wrap=document.querySelector('.occ-canvas-wrap');
+    let maxW=Math.min(wrap.clientWidth-24,window.innerWidth-24);
+    let scale=Math.min(1,maxW/img.width);
+    canvas.width=img.width*scale;canvas.height=img.height*scale;
+    canvas.style.width=canvas.width+'px';canvas.style.height=canvas.height+'px';
+    occState.scale=scale;redrawOcc();renderOccRects();
+  };img.src=occState.imageData;setupOccEvents();
+}
+function closeOccEditor(){document.getElementById('occ-editor').classList.remove('open')}
+function clearOccRects(){occState.rects=[];redrawOcc();renderOccRects()}
+function setupOccEvents(){
+  let c=document.getElementById('occ-canvas');
+  c.onpointerdown=e=>{e.preventDefault();occState.drawing=true;let r=c.getBoundingClientRect();occState.sx=(e.clientX-r.left)/c.width;occState.sy=(e.clientY-r.top)/c.height;c.setPointerCapture(e.pointerId)};
+  c.onpointermove=e=>{if(!occState.drawing)return;let r=c.getBoundingClientRect();let x=(e.clientX-r.left)/c.width,y=(e.clientY-r.top)/c.height;occState.cur={x:Math.min(occState.sx,x),y:Math.min(occState.sy,y),w:Math.abs(x-occState.sx),h:Math.abs(y-occState.sy)};redrawOcc()};
+  c.onpointerup=e=>{if(!occState.drawing)return;occState.drawing=false;if(occState.cur&&occState.cur.w>0.02&&occState.cur.h>0.02)occState.rects.push({...occState.cur,id:uid(),color:OCC_COLORS[occState.rects.length%OCC_COLORS.length]});occState.cur=null;redrawOcc();renderOccRects()};
+}
+function redrawOcc(){
+  let c=document.getElementById('occ-canvas');let ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);
+  if(occState.img)ctx.drawImage(occState.img,0,0,c.width,c.height);
+  occState.rects.forEach((r,i)=>{ctx.fillStyle=r.color+'cc';ctx.fillRect(r.x*c.width,r.y*c.height,r.w*c.width,r.h*c.height);ctx.fillStyle='#fff';let fs=Math.max(13,Math.min(r.h*c.height*.5,24));ctx.font=`bold ${fs}px Syne, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(i+1),(r.x+r.w/2)*c.width,(r.y+r.h/2)*c.height)});
+  if(occState.cur){let r=occState.cur;ctx.fillStyle='rgba(184,255,69,0.35)';ctx.fillRect(r.x*c.width,r.y*c.height,r.w*c.width,r.h*c.height);ctx.strokeStyle='#b8ff45';ctx.lineWidth=2;ctx.strokeRect(r.x*c.width,r.y*c.height,r.w*c.width,r.h*c.height)}
+}
+function renderOccRects(){
+  let el=document.getElementById('occ-rects-list');if(!el)return;
+  el.innerHTML=occState.rects.length?occState.rects.map((r,i)=>`<span class="occ-chip" style="background:${r.color}">${i+1} <button onclick="occState.rects=occState.rects.filter(x=>x.id!=='${r.id}');redrawOcc();renderOccRects()">✕</button></span>`).join(''):`<span style="font-size:12px;color:var(--tx3)">Zaznacz obszary na obrazku</span>`;
+}
+function saveOccCard(){
+  if(!occState.rects.length){toast('Zaznacz przynajmniej jeden obszar');return}
+  DB.cards.push({id:uid(),deckId:occState.deckId,front:`[Occlusion] ${occState.rects.length} obszarów`,back:'',tags:occState.tags||[],type:'occlusion',imageData:occState.imageData,occlusions:occState.rects,status:'new',reviews:0,ef:2.5,interval:0,reps:0,nextReview:null,lastReview:null});
+  save();closeOccEditor();renderCards();updateDueBadge();toast(`Occlusion zapisane (${occState.rects.length} obszarów) ✓`);
+}
+
+/* ═══ STATS ════════════════════════════════════════════════════ */
+function renderStats(){
+  let total=DB.cards.length,known=DB.cards.filter(c=>c.status==='known').length,due=getDueCount(),pct=total?Math.round(known/total*100):0;
+  let sg=document.getElementById('stats-grid');
+  if(sg)sg.innerHTML=`<div class="st"><div class="st-num" style="color:var(--acc)">${total}</div><div class="st-lbl">Wszystkich fiszek</div></div><div class="st"><div class="st-num" style="color:var(--grn)">${known}</div><div class="st-lbl">Opanowanych</div></div><div class="st"><div class="st-num" style="color:var(--red)">${due}</div><div class="st-lbl">Do powtórzenia dziś</div></div><div class="st"><div class="st-num">${DB.stats.streak||0}🔥</div><div class="st-lbl">Dni z rzędu</div></div><div class="st"><div class="st-num">${DB.stats.totalReviews||0}</div><div class="st-lbl">Powtórzeń łącznie</div></div><div class="st"><div class="st-num" style="color:var(--acc)">${pct}%</div><div class="st-lbl">Opanowano</div></div>`;
+
+  // KALIBRACJA
+  let calib=DB.stats.calibration||[];
+  let ct=document.getElementById('calib-tiles');
+  let cb=document.getElementById('calib-bars');
+  if(calib.length>0){
+    let correct=calib.filter(c=>c.p===c.a).length;
+    let calibPct=Math.round(correct/calib.length*100);
+    let overConf=calib.filter(c=>c.p>c.a).length;
+    let underConf=calib.filter(c=>c.p<c.a).length;
+    if(ct)ct.innerHTML=`<div class="calib-tile" style="flex:1"><div class="calib-num" style="color:var(--acc)">${calibPct}%</div><div class="calib-lbl">Trafność</div></div><div class="calib-tile" style="flex:1"><div class="calib-num" style="color:var(--red)">${Math.round(overConf/calib.length*100)}%</div><div class="calib-lbl">Zbyt pewny</div></div><div class="calib-tile" style="flex:1"><div class="calib-num" style="color:var(--blu)">${Math.round(underConf/calib.length*100)}%</div><div class="calib-lbl">Zbyt niepewny</div></div>`;
+    if(cb){
+      let groups=[{lbl:'Nie wiem → Błąd',p:1,a:1},{lbl:'Nie wiem → OK',p:1,a:2},{lbl:'Chyba → OK',p:2,a:2},{lbl:'Wiem → OK',p:3,a:3},{lbl:'Wiem → Błąd',p:3,a:1}];
+      cb.innerHTML=`<div class="calib-bar-wrap" style="padding:0">`;
+      let maxv=Math.max(...groups.map(g=>calib.filter(c=>c.p===g.p&&c.a===g.a).length),1);
+      cb.innerHTML=groups.map(g=>{
+        let cnt=calib.filter(c=>c.p===g.p&&c.a===g.a).length;
+        let pct2=Math.round(cnt/maxv*100);
+        let col=g.p===g.a?'var(--grn)':g.p>g.a?'var(--red)':'var(--blu)';
+        return`<div class="calib-bar-row"><div class="calib-bar-lbl">${g.lbl}</div><div class="calib-bar-track"><div class="calib-bar-fill" style="width:${pct2}%;background:${col}"></div></div><span style="font-size:11px;color:var(--tx2);width:24px;text-align:right">${cnt}</span></div>`;
+      }).join('');
+    }
+  }else{
+    if(ct)ct.innerHTML=`<div style="font-size:13px;color:var(--tx2)">Brak danych. Zacznij sesję nauki — przed każdą fiszką ocenisz swoją pewność.</div>`;
+    if(cb)cb.innerHTML='';
+  }
+
+  let days=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+  let dow=new Date().getDay(),ti=dow===0?6:dow-1;
+  let wd=DB.stats.weekData||[0,0,0,0,0,0,0];let wmax=Math.max(...wd,1);
+  let wb=document.getElementById('week-bars');
+  if(wb)wb.innerHTML=wd.map((v,i)=>`<div class="bc${i===ti?' today':''}"><div class="bf" style="height:${Math.round(v/wmax*100)}%;${i!==ti?'opacity:.5':''}"></div><div class="bd">${days[i]}</div></div>`).join('');
+  let fc=getForecast(14);let fmax=Math.max(...fc,1);
+  let fel=document.getElementById('forecast');
+  if(fel)fel.innerHTML=fc.map((v,i)=>`<div class="fcc"><div class="fcf" style="height:${Math.round(v/fmax*100)}%"></div><div class="fcl">${i===0?'D':i===7?'+7':i===13?'+13':''}</div></div>`).join('');
+  let dp=document.getElementById('deck-prog');
+  if(dp)dp.innerHTML=`<div style="font-size:10px;font-weight:700;color:var(--tx3);font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Zestawy</div>`+DB.decks.map(d=>{let cards=getDeckCards(d.id);let k=cards.filter(c=>c.status==='known').length;let p=cards.length?Math.round(k/cards.length*100):0;return`<div class="dp-row"><span class="di-dot" style="background:${d.color}"></span><div class="dp-name">${esc(d.name)} <span style="font-size:11px;color:var(--tx3)">(${cards.length})</span></div><div class="dp-bar"><div class="dp-fill" style="width:${p}%"></div></div><div class="dp-pct">${p}%</div></div>`}).join('')||'<div style="font-size:13px;color:var(--tx2)">Brak zestawów</div>';
+}
+
+/* ═══ ADMIN ════════════════════════════════════════════════════ */
+function renderAdmin(){
+  let el=document.getElementById('eng-list');let cnt=document.getElementById('eng-count');
+  if(cnt)cnt.textContent=DB.engVars.length;
+  if(el)el.innerHTML=DB.engVars.map(v=>`<div class="eng-item"><div class="eng-name">${esc(v.name)}</div><span class="eng-val">${fmtVal(v.value)}</span><span class="eng-unit">${esc(v.unit)}</span><span class="eng-cat">${esc(v.cat||v.category||'')}</span></div>`).join('')||'<div style="font-size:13px;color:var(--tx2)">Baza pusta.</div>';
+  renderApiKeyStatus();
+}
+function parsePaste(){
+  let txt=document.getElementById('paste-area')?.value||'';
+  let added=0;
+  txt.split('\n').filter(l=>l.trim()).forEach(line=>{
+    let[name,vs,unit,mns,mxs,cat]=line.split('|').map(p=>p.trim());
+    let value=parseFloat(vs),min=parseFloat(mns),max=parseFloat(mxs);
+    if(!name||isNaN(value)||isNaN(min)||isNaN(max))return;
+    DB.engVars.push({id:uid(),name,value,unit,min,max,cat:cat||'Ogólne',desc:''});added++;
+  });
+  save();renderAdmin();
+  if(added>0){toast(`Dodano ${added} zmiennych ✓`);document.getElementById('paste-area').value=''}
+  else toast('Błędny format. Sprawdź przykład powyżej.');
+}
+function clearEngDB(){if(!confirm('Wyczyścić?'))return;DB.engVars=[];save();renderAdmin();renderLearnControls();toast('Wyczyszczone')}
+function exportJSON(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({version:3,date:new Date().toISOString(),...DB},null,2)],{type:'application/json'}));a.download=`fiszki-${today()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Wyeksportowano 📤')}
+function importJSON(inp){if(!inp.files?.[0])return;let r=new FileReader();r.onload=e=>{try{let d=JSON.parse(e.target.result);if(d.decks)DB.decks=d.decks;if(d.cards)DB.cards=d.cards;if(d.engVars)DB.engVars=d.engVars;if(d.stats)DB.stats=d.stats;save();renderAdmin();renderDecks();renderCards();renderLearnControls();updateDueBadge();toast('Import ✓')}catch{toast('Błąd pliku JSON')}};r.readAsText(inp.files[0])}
+function clearAll(){if(!confirm('Usunąć WSZYSTKIE dane?'))return;localStorage.clear();load();renderAdmin();renderDecks();renderCards();renderLearnControls();updateDueBadge();updateXPBadge();toast('Dane usunięte')}
+function openApiKey(){openSheet(`<div class="sh-ttl">🔑 Klucz API Anthropic</div><div class="field"><label>Klucz API</label><input id="in-key" type="password" placeholder="sk-ant-..." value="${esc(localStorage.getItem('fp_key')||'')}"></div><div class="sh-actions"><button class="sh-cancel" onclick="closeSheet()">Anuluj</button><button class="sh-ok" onclick="saveApiKey()">Zapisz</button></div>`);setTimeout(()=>document.getElementById('in-key')?.focus(),350)}
+function saveApiKey(){let k=document.getElementById('in-key')?.value.trim()||'';localStorage.setItem('fp_key',k);closeSheet();renderApiKeyStatus();toast(k?'Klucz zapisany ✓':'Klucz usunięty')}
+function renderApiKeyStatus(){let k=localStorage.getItem('fp_key')||'';let el=document.getElementById('key-status');if(el)el.textContent=k?k.slice(0,8)+'••••••••••••':'Nie ustawiony'}
+
+/* ═══ SHEET ════════════════════════════════════════════════════ */
+function openSheet(html){document.getElementById('sheet-body').innerHTML=html;document.getElementById('overlay').classList.add('open')}
+function closeSheet(){document.getElementById('overlay').classList.remove('open')}
+function bgClose(e){if(e.target===document.getElementById('overlay'))closeSheet()}
+
+/* ═══ POMODORO ═════════════════════════════════════════════════ */
+let pomo={on:false,brk:false,left:25*60,timer:null};
+function togglePomo(){if(pomo.on){clearInterval(pomo.timer);pomo.on=false;updatePomoDisp()}else{pomo.on=true;pomo.timer=setInterval(tickPomo,1000);updatePomoDisp()}}
+function tickPomo(){pomo.left--;if(pomo.left<=0){pomo.brk=!pomo.brk;pomo.left=pomo.brk?5*60:25*60;toast(pomo.brk?'☕ Przerwa 5 min!':'💪 Wracamy do nauki!')}updatePomoDisp()}
+function updatePomoDisp(){let el=document.getElementById('pomo-btn');if(!el)return;let m=Math.floor(pomo.left/60),s=pomo.left%60;el.textContent=`${pomo.brk?'☕':'⏱'} ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;el.className='pomo-btn'+(pomo.on?(pomo.brk?' brk':' run'):'') }
+
+/* ═══ XP & STREAK ══════════════════════════════════════════════ */
+const XP_LEVELS=[0,100,250,500,900,1500,2500,4000,6000,9000,13000];
+const LVL_NAMES=['','Nowicjusz','Uczeń','Student','Adept','Ekspert','Mistrz','Profesor','Legenda','Genius','Omnibus'];
+function awardXP(amt){DB.stats.xp=(DB.stats.xp||0)+amt;let lv=1;for(let i=0;i<XP_LEVELS.length;i++){if(DB.stats.xp>=XP_LEVELS[i])lv=i+1}let prev=DB.stats.level||1;DB.stats.level=lv;if(lv>prev)toast(`🏆 Nowy poziom: ${LVL_NAMES[lv]||'Max'}!`);updateXPBadge()}
+function updateXPBadge(){let el=document.getElementById('xp-chip');if(el)el.textContent=`⚡ ${DB.stats.xp||0} XP · Lv${DB.stats.level||1}`}
+function updateStreak(){let t=today(),last=DB.stats.lastDate;if(!last)DB.stats.streak=1;else if(t===last){}else if(t===addDays(last,1))DB.stats.streak=(DB.stats.streak||0)+1;else DB.stats.streak=1;DB.stats.lastDate=t;save()}
+function updateDueBadge(){let cnt=getDueCount();let el=document.getElementById('due-badge');if(el){el.textContent=cnt>99?'99+':String(cnt);el.style.display=cnt>0?'flex':'none'}}
+
+/* ═══ KEYBOARD ═════════════════════════════════════════════════ */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(_curView!=='learn')return;
+  if(e.code==='Space'){e.preventDefault();if(S.confidence&&!S.flipped&&S.cards.length&&S.index<S.cards.length)flipCard()}
+  if(e.key==='1'&&S.flipped)rate(1);
+  if(e.key==='2'&&S.flipped)rate(3);
+  if(e.key==='3'&&S.flipped)rate(5);
+});
+
+/* ═══ TOAST ════════════════════════════════════════════════════ */
+let _tt=null;
+function toast(msg){let el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400)}
+
+/* ═══ INIT ═════════════════════════════════════════════════════ */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+load();renderLearnControls();updateXPBadge();updateDueBadge();renderApiKeyStatus();
+</script>
+</body>
+</html>
